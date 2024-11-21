@@ -1,25 +1,31 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+// src/router/index.js
+import { createRouter, createWebHistory } from 'vue-router';
+import Login from '../components/Login.vue';
+import SchuelerList from '../components/SchuelerList.vue';
+import AdminView from '@/components/AdminView.vue';
+import TeacherView from '@/components/TeacherView.vue';
 
 const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+  { path: '/login', component: Login },
+  { path: '/', component: SchuelerList },
+  { path: '/admin', component: AdminView },
+  { path: '/teacher', component: TeacherView }
+];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes
-})
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('csrfToken'); // Überprüfen, ob das Token existiert
+
+  if (to.path !== '/login' && !isAuthenticated) {
+    // Wenn der Benutzer nicht eingeloggt ist und die Route nicht /login ist
+    next({ path: '/login', query: { redirect: to.fullPath } }); // Weiterleitung zur Login-Seite
+  } else {
+    next(); // Zugriff auf die Route gewähren
+  }
+});
+
+export default router;
